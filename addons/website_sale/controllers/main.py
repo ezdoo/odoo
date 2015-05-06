@@ -375,7 +375,7 @@ class website_sale(http.Controller):
 
         order = None
 
-        shipping_id = data and data.get('shipping_id') or None
+        shipping_id = data and data.get('shipping_id') or partner.default_shipping_id and partner.default_shipping_id.id or 0
         shipping_ids = []
         checkout = {}
         if not data:
@@ -397,12 +397,6 @@ class website_sale(http.Controller):
                 pass
             if shipping_id == -1:
                 checkout.update(self.checkout_parse('shipping', data))
-
-        if shipping_id is None:
-            if not order:
-                order = request.website.sale_get_order(context=context)
-            if order and order.partner_shipping_id:
-                shipping_id = order.partner_shipping_id.id
 
         shipping_ids = list(set(shipping_ids) - set([partner.id]))
 
