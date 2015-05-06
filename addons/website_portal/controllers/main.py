@@ -68,9 +68,15 @@ class website_account(http.Controller):
             'order_invoice_lines': order_invoice_lines,
         })
 
-    @http.route(['/account/details'], type='http', auth='user', website=True)
-    def details(self, **post):
-        partner = request.env['res.users'].browse(request.uid).partner_id
+    @http.route(['/account/details', '/account/details/<int:partner_id>', '/account/details/new'], type='http', auth='user', website=True)
+    def details(self, partner_id=None, **post):
+        user = request.env['res.users'].browse(request.uid)
+        if partner_id:
+            partner = request.env['res.partner'].browse(partner_id)
+            if partner.parent_id != user.partner_id:
+                return request.render("website.404")
+        else:
+            partner = user.partner_id
         values = {
             'error': {},
             'error_message': []
@@ -81,16 +87,28 @@ class website_account(http.Controller):
             values.update({'error': error, 'error_message': error_message})
             values.update(post)
             if not error:
-                post.update({'zip': post.pop('zipcode', '')})
-                partner.sudo().write(post)
-                return request.redirect('/account')
+                if bool(post.get('is_new')):
+                    post.update({
+                        'parent_id': partner.id,
+                        'zip': post.pop('zipcode', ''),
+                        'type': 'delivery',
+                    })
+                    request.env['res.partner'].sudo().create(post)
+                else:
+                    post.update({'zip': post.pop('zipcode', '')})
+                    partner.sudo().write(post)
+                return request.redirect('/account/details')
 
         countries = request.env['res.country'].sudo().search([])
         states = request.env['res.country.state'].sudo().search([])
-
+        
         values.update({
             'partner': partner,
             'countries': countries,
+            'is_child': partner != user.partner_id,
+            'is_new': 'new' in request.httprequest.path,
+            'contacts': partner.child_ids.filtered(lambda p: p.type == 'contact'),
+            'addresses': partner.child_ids.filtered(lambda p: p.type == 'delivery'),
             'states': states,
             'has_check_vat': hasattr(request.env['res.partner'], 'check_vat'),
         })
@@ -130,3 +148,28 @@ class website_account(http.Controller):
             error_message.append(_('Some required fields are empty.'))
 
         return error, error_message
+
+    @http.route(['/account/details/defaults'], type='json', auth='user', method=["POST"], website=True)
+    def defaults(self, **post):
+        params = post.get('params')
+        user = request.env['res.users'].browse(request.uid)
+        partner = user.partner_id
+
+        child_id = int(params.get('child_id'))
+        child = request.env['res.partner'].browse(child_id)
+        
+        partner.sudo().default_shipping_id = child
+
+        return True
+
+    @http.route(['/account/details/<int:partner_id>/remove'], type='http', auth='user', website=True)
+    def remove(self, partner_id, **post):
+        user = request.env['res.users'].browse(request.uid)
+        partner = request.env['res.partner'].browse(partner_id)
+
+        if partner.parent_id == user.partner_id and partner.type == 'delivery':
+            partner.sudo().write({'active': False})
+            if user.partner_id.default_shipping_id == partner:
+                user.partner_id.sudo().default_shipping_id = False
+
+        return request.redirect('/account/details')
