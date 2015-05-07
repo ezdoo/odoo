@@ -149,18 +149,16 @@ class website_account(http.Controller):
 
         return error, error_message
 
-    @http.route(['/account/details/defaults'], type='json', auth='user', method=["POST"], website=True)
-    def defaults(self, **post):
-        params = post.get('params')
+    @http.route(['/account/details/shipping/<int:shipping_id>'], type='http', auth='user', website=True)
+    def shipping(self, shipping_id, **post):
         user = request.env['res.users'].browse(request.uid)
         partner = user.partner_id
 
-        child_id = int(params.get('child_id'))
-        child = request.env['res.partner'].browse(child_id)
-        
-        partner.sudo().default_shipping_id = child
+        shipping = request.env['res.partner'].browse(shipping_id)
 
-        return True
+        partner.sudo().default_shipping_id = shipping
+
+        return request.redirect('/account/details')
 
     @http.route(['/account/details/<int:partner_id>/remove'], type='http', auth='user', website=True)
     def remove(self, partner_id, **post):

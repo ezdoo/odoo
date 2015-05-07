@@ -456,18 +456,6 @@
                             </div>
                         </div>
                     </form>
-                    <div class="col-md-4" t-if="partner.child_ids and not is_new">
-                      <h3 class="page-header">Default Shipping Address</h3>
-                        <h4>Shipping<a id="wp-change-shipping" class="btn btn-xs btn-default pull-right" data-toggle="modal" data-target="#wp-address-selector" href="">Change</a></h4>
-                        <t t-if="partner.default_shipping_id">
-                          <t t-set="contact" t-value="partner.default_shipping_id"/>
-                          <t t-call="website_portal.contact_widget"/>
-                        </t>
-                        <t t-if="not partner.default_shipping_id">
-                          <t t-set="contact" t-value="partner"/>
-                          <t t-call="website_portal.contact_widget"/>
-                        </t>
-                    </div>
                     <div t-if="contacts and not is_new" class='col-md-8'>
                       <h3 class="page-header">Linked Contacts</h3>
                       <div class="row">
@@ -485,35 +473,24 @@
                       <h3 class="page-header">Shipping Adresses<a class="btn btn-default btn-sm pull-right" href="/account/details/new">Add New <i class="fa fa-plus"></i></a></h3>
                       <p t-if="not addresses">There are no other shipping addresses.</p>
                       <div class="row">
+                        <div class="col-md-4 mb16 clearfix">
+                            <t t-set="contact" t-value="partner"/>
+                            <t t-call="website_portal.contact_widget"/>
+                            <div class="pull-right">
+                              <a class='btn btn-default btn-xs mt4 mr4' t-if="contact == partner.default_shipping_id" disabled="disabled"><i class="fa fa-check"></i> Default</a>
+                              <a class='btn btn-default btn-xs mt4 mr4 wp-address-select' t-if="contact != partner.default_shipping_id" t-attf-href="/account/details/shipping/#{contact.id}">Set as Default</a>
+                              <a class="btn btn-xs btn-default mt4 mr4" t-attf-href="/account/details/#{contact.id}/remove">Remove</a>
+                              <a class="btn btn-xs btn-default mt4 mr4" t-attf-href="/account/details/#{contact.id}">Edit</a>
+                            </div>
+                          </div>
                         <t t-foreach="addresses" t-as="contact">
                           <div class="col-md-4 mb16 clearfix">
                             <t t-call="website_portal.contact_widget"/>
                             <div class="pull-right">
-                              <a class="btn btn-xs btn-default" t-attf-href="/account/details/#{contact.id}/remove">Remove</a>&amp;nbsp;
-                              <a class="btn btn-xs btn-default" t-attf-href="/account/details/#{contact.id}">Edit</a>
-                            </div>
-                          </div>
-                        </t>
-                      </div>
-                    </div>
-                    <div class="modal fade" id="wp-address-selector">
-                      <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <strong><span id="wp-modal-title"></span></strong>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&amp;times;</span></button>
-                          </div>
-                          <div class="modal-body">
-                            <div class="row">
-                              <a class="col-md-3 mb16 wp-address-select" data-id="0">
-                                  <t t-set="contact" t-value="partner"/>
-                                  <t t-call="website_portal.contact_widget"/>
-                                </a>
-                              <t t-foreach="partner.child_ids" t-as="contact">
-                                <a class="col-md-3 mb16 wp-address-select" t-att-data-id="contact.id">
-                                  <t t-call="website_portal.contact_widget"/>
-                                </a>
-                              </t>
+                              <a class='btn btn-default btn-xs mt4 mr4' t-if="contact == partner.default_shipping_id" disabled="disabled"><i class="fa fa-check"></i> Default</a>
+                              <a class='btn btn-default btn-xs mt4 mr4 wp-address-select' t-if="contact != partner.default_shipping_id" t-attf-href="/account/details/shipping/#{contact.id}">Set as Default</a>
+                              <a class="btn btn-xs btn-default mt4 mr4" t-attf-href="/account/details/#{contact.id}/remove">Remove</a>
+                              <a class="btn btn-xs btn-default mt4 mr4" t-attf-href="/account/details/#{contact.id}">Edit</a>
                             </div>
                             <form class="hidden" method="post" action="/account/details/defaults" id="wp-address-form">
                               <select name="child_id">
@@ -524,9 +501,9 @@
                               </select>
                             </form>
                           </div>
-                        </div><!-- /.modal-content -->
-                      </div><!-- /.modal-dialog -->
-                    </div><!-- /.modal -->
+                        </t>
+                      </div>
+                    </div>
                   </div>
                 </div>
             </div>
