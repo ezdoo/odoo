@@ -5,6 +5,7 @@ from openerp import http
 from openerp.http import request
 from openerp import tools
 from openerp.tools.translate import _
+from openerp.tools.safe_eval import safe_eval
 
 
 class website_account(http.Controller):
@@ -81,6 +82,7 @@ class website_account(http.Controller):
             'error': {},
             'error_message': []
         }
+        params = request.env['ir.config_parameter']
 
         if post:
             error, error_message = self.details_form_validate(post)
@@ -100,6 +102,7 @@ class website_account(http.Controller):
                 return request.redirect('/account/details')
 
         countries = request.env['res.country'].sudo().search([])
+        us_id = request.env['res.country'].sudo().search([('name', '=', 'United States')]).id
         states = request.env['res.country.state'].sudo().search([])
         
         values.update({
@@ -111,6 +114,9 @@ class website_account(http.Controller):
             'addresses': partner.child_ids.filtered(lambda p: p.type == 'delivery'),
             'states': states,
             'has_check_vat': hasattr(request.env['res.partner'], 'check_vat'),
+            'validate': safe_eval(params.sudo().get_param('website_portal.address_validation', default="False")),
+            'mandatory_validation': safe_eval(params.sudo().get_param('website_portal.mandatory_validation', default="False")),
+            'us_id': us_id,
         })
 
         return request.website.render("website_portal.details", values)
@@ -171,3 +177,17 @@ class website_account(http.Controller):
                 user.partner_id.sudo().default_shipping_id = False
 
         return request.redirect('/account/details')
+
+    @http.route(['/account/details/validate'], type='json', auth='user', method=['POST'], website=True)
+    def validate(self, **post):
+        params = post.get('params')
+        state_id = params.get('state_id')
+        if state_id:
+            state = request.env['res.country.state'].browse(int(state_id))
+        address = {
+            'street': params.get('street2'),  # magical street/company implementation in website_sale
+            'city': params.get('city'),
+            'zip': params.get('zipcode'),
+            'state': state.code if state_id else 'XX',
+        }
+        return request.env['res.partner'].sudo().validate_address(address) 
