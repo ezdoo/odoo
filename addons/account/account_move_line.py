@@ -275,8 +275,9 @@ class account_move_line(osv.osv):
                     #we propose to continue the same move by copying the ref, the name, the partner...
                     move = move_obj.browse(cr, uid, move_id, context=context)
                     data.setdefault('name', move.line_id[-1].name)
+                    same_partner = len({l.partner_id for l in move.line_id}) == 1
                     for l in move.line_id:
-                        data['partner_id'] = data.get('partner_id') or l.partner_id.id
+                        data['partner_id'] = data.get('partner_id') or (same_partner and l.partner_id.id)
                         data['ref'] = data.get('ref') or l.ref
                         total += (l.debit or 0.0) - (l.credit or 0.0)
 
@@ -1074,11 +1075,9 @@ class account_move_line(osv.osv):
         # marking the lines as reconciled does not change their validity, so there is no need
         # to revalidate their moves completely.
         reconcile_context = dict(context, novalidate=True)
-        r_id = move_rec_obj.create(cr, uid, {
-            'type': type,
-            'line_id': map(lambda x: (4, x, False), ids),
-            'line_partial_ids': map(lambda x: (3, x, False), ids)
-        }, context=reconcile_context)
+        r_id = move_rec_obj.create(cr, uid, {'type': type}, context=reconcile_context)
+        self.write(cr, uid, ids, {'reconcile_id': r_id, 'reconcile_partial_id': False}, context=reconcile_context)
+
         # the id of the move.reconcile is written in the move.line (self) by the create method above
         # because of the way the line_id are defined: (4, x, False)
         for id in ids:
@@ -1221,6 +1220,7 @@ class account_move_line(osv.osv):
             todo_date = vals['date']
             del vals['date']
 
+        centralized_journals = []
         for line in self.browse(cr, uid, ids, context=context):
             ctx = context.copy()
             if not ctx.get('journal_id'):
@@ -1235,8 +1235,10 @@ class account_move_line(osv.osv):
                     ctx['period_id'] = line.period_id.id
             #Check for centralisation
             journal = journal_obj.browse(cr, uid, ctx['journal_id'], context=ctx)
-            if journal.centralisation:
-                self._check_moves(cr, uid, context=ctx)
+            if journal.centralisation and (ctx['journal_id'], ctx['period_id']) not in centralized_journals:
+                centralized_journals.append((ctx['journal_id'], ctx['period_id']))
+        for journal_period in centralized_journals:
+            self._check_moves(cr, uid, context=dict(ctx, journal_id=journal_period[0], period_id=journal_period[1]))
         result = super(account_move_line, self).write(cr, uid, ids, vals, context)
 
         if affects_move and check and not context.get('novalidate'):
@@ -1272,7 +1274,7 @@ class account_move_line(osv.osv):
         done = {}
         for line in self.browse(cr, uid, ids, context=context):
             err_msg = _('Move name (id): %s (%s)') % (line.move_id.name, str(line.move_id.id))
-            if line.move_id.state <> 'draft' and (not line.journal_id.entry_posted):
+            if line.move_id.state <> 'draft':
                 raise osv.except_osv(_('Error!'), _('You cannot do this modification on a confirmed entry. You can just change some non legal fields or you must unconfirm the journal entry first.\n%s.') % err_msg)
             if line.reconcile_id:
                 raise osv.except_osv(_('Error!'), _('You cannot do this modification on a reconciled entry. You can just change some non legal fields or you must unreconcile first.\n%s.') % err_msg)
@@ -1375,7 +1377,8 @@ class account_move_line(osv.osv):
             account_id = 'account_collected_id'
             base_sign = 'base_sign'
             tax_sign = 'tax_sign'
-            if journal.type in ('purchase_refund', 'sale_refund') or (journal.type in ('cash', 'bank') and total < 0):
+            is_refund = ((total > 0 and tax_id.type_tax_use == 'sale') or (total < 0 and tax_id.type_tax_use != 'sale'))
+            if journal.type in ('purchase_refund', 'sale_refund') or (journal.type in ('cash', 'bank') and is_refund):
                 base_code = 'ref_base_code_id'
                 tax_code = 'ref_tax_code_id'
                 account_id = 'account_paid_id'
