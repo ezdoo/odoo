@@ -30,9 +30,10 @@ before_script:
   - apt-get update -q && apt-get install nodejs -yqq
   - apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev -yqq
   - apt-get install postgresql-client-common postgresql-client -yqq
+  - useradd "$POSTGRES_USER"
+  - su $POSTGRES_USER
   - pip install -r requirements.txt
   # - createdb --encoding=UTF8 --locale=en_US.UTF-8 --template=template0 -D ramdisk $POSTGRES_DB
-  - useradd "$POSTGRES_USER"
 
 # To get Django tests to work you may need to create a settings file using
 # the following DATABASES:
@@ -54,4 +55,5 @@ test:
   variables:
     DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/$POSTGRES_DB"
   script:
-  - su -l $POSTGRES_USER -c 'python /builds/ezdoo/odoo/odoo.py --database="$POSTGRES_DB" --db_host="$DB_HOST" --db_user="$POSTGRES_USER" --db_password="$POSTGRES_PASSWORD" --addons-path=/builds/ezdoo/odoo/addons/ -i all --log-level=warn --stop-after-init'
+  - su $POSTGRES_USER
+  - python /builds/ezdoo/odoo/odoo.py --database="$POSTGRES_DB" --db_host="$DB_HOST" --db_user="$POSTGRES_USER" --db_password="$POSTGRES_PASSWORD" --addons-path=/builds/ezdoo/odoo/addons/ -i all --enable-test --log-level=warn --stop-after-init
