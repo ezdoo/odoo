@@ -23,7 +23,8 @@ cache:
 before_script:
   - python -V                                   # Print out python version for debugging
   # Uncomment next line if your Django app needs a JS runtime:
-  # - apt-get update -q && apt-get install nodejs -yqq
+  - apt-get update -q && apt-get install nodejs -yqq
+  - apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev -yqq
   - pip install -r requirements.txt
   - createdb --encoding=UTF8 --locale=en_US.UTF-8 --template=template0 -D ramdisk $POSTGRES_DB
 
