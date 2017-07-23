@@ -31,11 +31,15 @@ build:
   stage: build
   before_script:
     - python -V                                   # Print out python version for debugging
-    - apt-get update -q && apt-get install nodejs -yqq
-    - apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev -yqq
-    - apt-get install postgresql-client-common postgresql-client -yqq
-    - useradd "$POSTGRES_USER"
+    - apt-get update -q                           # Update apt repositories cache
+    - apt-get install nodejs -yqq                 # Install nodejs javascript support
+    - apt-get install libsasl2-dev libldap2-dev libssl-dev -yqq # Development libraries for 
+    - apt-get install postgresql-client-common postgresql-client -yqq # PostgreSQL client support
+    - apt-get install python-dev -yqq             # Python development support
+    - useradd "$POSTGRES_USER"                    # Added regular user to runner
   script:
+  - ls -la /root/.cache/pip
+  - ls -la /home/$POSTGRES_USER/.cache/pip
   - pip install -r /builds/ezdoo/odoo/requirements.txt
 
 test:
