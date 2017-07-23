@@ -15,42 +15,28 @@ variables:
   POSTGRES_USER: runner
   POSTGRES_PASSWORD: "p@$$w04d"
   DB_HOST: "postgres"
+  GIT_STRATEGY: fetch
 
 # This folder is cached between builds
 # http://docs.gitlab.com/ce/ci/yaml/README.html#cache
 cache:
   paths:
-  - ~/.cache/pip/
+  - /root/.cache/pip/
 
-# This is a basic example for a gem or script which doesn't use
-# services such as redis or postgres
-before_script:
-  - python -V                                   # Print out python version for debugging
-  # Uncomment next line if your Django app needs a JS runtime:
-  - apt-get update -q && apt-get install nodejs -yqq
-  - apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev -yqq
-  - apt-get install postgresql-client-common postgresql-client -yqq
-  - useradd "$POSTGRES_USER"
-  - su $POSTGRES_USER -c 'pip install -r /builds/ezdoo/odoo/requirements.txt'
+stages:
+  - build
+  - test
 
-# To get Django tests to work you may need to create a settings file using
-# the following DATABASES:
-# 
-# DATABASES = {
-#     'default': {
-#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#        'NAME': 'ci',
-#        'USER': 'postgres',
-#        'PASSWORD': 'postgres',
-#        'HOST': 'postgres',
-#        'PORT': '5432',
-#    },
-# }
-#
-# and then adding `--settings app.settings.ci` (or similar) to the test command
+build:
+  before_script:
+    - python -V                                   # Print out python version for debugging
+    - apt-get update -q && apt-get install nodejs -yqq
+    - apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev -yqq
+    - apt-get install postgresql-client-common postgresql-client -yqq
+    - useradd "$POSTGRES_USER"
+  script:
+  - pip install -r /builds/ezdoo/odoo/requirements.txt
 
 test:
-  variables:
-    DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/$POSTGRES_DB"
   script:
   - su $POSTGRES_USER -c 'python /builds/ezdoo/odoo/odoo.py --database="$POSTGRES_DB" --db_host="$DB_HOST" --db_user="$POSTGRES_USER" --db_password="$POSTGRES_PASSWORD" --addons-path=/builds/ezdoo/odoo/addons/ -i all --enable-test --log-level=warn --stop-after-init'
