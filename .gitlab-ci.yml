@@ -16,12 +16,15 @@ variables:
   POSTGRES_PASSWORD: "p@$$w04d"
   DB_HOST: "postgres"
   GIT_STRATEGY: fetch
+  GIT_DEPTH: "1"
 
 # This folder is cached between builds
 # http://docs.gitlab.com/ce/ci/yaml/README.html#cache
 cache:
+  key: "$CI_JOB_STAGE/$CI_COMMIT_REF_NAME"
+  untracked: true
   paths:
-  - /root/.cache/pip/
+  - ~/.cache/pip/
 
 stages:
   - build
