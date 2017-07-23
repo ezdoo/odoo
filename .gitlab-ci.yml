@@ -31,7 +31,7 @@ before_script:
   - apt-get install libsasl2-dev python-dev libldap2-dev libssl-dev -yqq
   - apt-get install postgresql-client-common postgresql-client -yqq
   - pip install -r requirements.txt
-  - createdb --encoding=UTF8 --locale=en_US.UTF-8 --template=template0 -D ramdisk $POSTGRES_DB
+  # - createdb --encoding=UTF8 --locale=en_US.UTF-8 --template=template0 -D ramdisk $POSTGRES_DB
 
 # To get Django tests to work you may need to create a settings file using
 # the following DATABASES:
