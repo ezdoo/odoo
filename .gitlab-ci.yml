@@ -10,7 +10,11 @@ services:
   - postgres:latest
 
 variables:
-  POSTGRES_DB: $CI_BUILD_REF
+  # POSTGRES_DB: $CI_BUILD_REF
+  POSTGRES_DB: runner
+  POSTGRES_USER: runner
+  POSTGRES_PASSWORD: "p@$$w04d"
+  DB_HOST: "postgres"
 
 # This folder is cached between builds
 # http://docs.gitlab.com/ce/ci/yaml/README.html#cache
@@ -48,7 +52,5 @@ before_script:
 test:
   variables:
     DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/$POSTGRES_DB"
-    DB_HOST: "postgres"
-    DB_USER: "postgres"
   script:
-  - python odoo.py --database=$POSTGRES_DB --db_host=$DB_HOST --db_user=$DB_USER --addons-path=./addons/ -i all --log-level=warn --stop-after-init
+  - python odoo.py --database=$POSTGRES_DB --db_host=$DB_HOST --db_user=$POSTGRES_USER --db_password=$POSTGRES_PASSWORD --addons-path=./addons/ -i all --log-level=warn --stop-after-init
