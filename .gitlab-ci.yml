@@ -28,6 +28,8 @@ cache:
 
 before_script:
   - python -V                                   # Print out python version for debugging
+  - pip --version
+  - pip --help
   - apt-get update -q                           # Update apt repositories cache
   - apt-get install nodejs -yqq                 # Install nodejs javascript support
   - apt-get install libsasl2-dev libldap2-dev libssl-dev -yqq # Development libraries for 
