@@ -28,6 +28,7 @@ stages:
   - test
 
 build:
+  stage: build
   before_script:
     - python -V                                   # Print out python version for debugging
     - apt-get update -q && apt-get install nodejs -yqq
@@ -38,5 +39,8 @@ build:
   - pip install -r /builds/ezdoo/odoo/requirements.txt
 
 test:
+  stage: build
   script:
   - su $POSTGRES_USER -c 'python /builds/ezdoo/odoo/odoo.py --database="$POSTGRES_DB" --db_host="$DB_HOST" --db_user="$POSTGRES_USER" --db_password="$POSTGRES_PASSWORD" --addons-path=/builds/ezdoo/odoo/addons/ -i all --enable-test --log-level=warn --stop-after-init'
+  dependencies:
+  - build
