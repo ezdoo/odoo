@@ -39,12 +39,9 @@ before_script:
   - pip install -r /builds/ezdoo/odoo/requirements.txt
 
 test:
-  stage: test
   script:
   - ls -la /root/.cache/pip && exit 0
   - ls -la /home/$POSTGRES_USER/.cache/pip && exit 0
   - su $POSTGRES_USER -c 'python /builds/ezdoo/odoo/odoo.py --database="$POSTGRES_DB" --db_host="$DB_HOST" --db_user="$POSTGRES_USER" --db_password="$POSTGRES_PASSWORD" --addons-path=/builds/ezdoo/odoo/addons/ -i all --enable-test --log-level=warn --stop-after-init'
   - ls -la /root/.cache/pip && exit 0
   - ls -la /home/$POSTGRES_USER/.cache/pip && exit 0
-  dependencies:
-  - build
