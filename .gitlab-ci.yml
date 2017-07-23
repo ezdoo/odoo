@@ -48,5 +48,7 @@ before_script:
 test:
   variables:
     DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/$POSTGRES_DB"
+    DB_HOST: "postgres"
+    DB_USER: "postgres"
   script:
-  - python odoo.py -d $POSTGRES_DB --addons-path=./addons/ -i all --log-level=warn --stop-after-init
+  - python odoo.py --database=$POSTGRES_DB --db_host=$DB_HOST --db_user=$DB_USER --addons-path=./addons/ -i all --log-level=warn --stop-after-init
