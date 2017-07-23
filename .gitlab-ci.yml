@@ -34,11 +34,11 @@ before_script:
   - apt-get install postgresql-client-common postgresql-client -yqq # PostgreSQL client support
   - apt-get install python-dev -yqq             # Python development support
   - useradd "$POSTGRES_USER"                    # Added regular user to runner
-  - ls -la /root/.cache/pip && ls -la "/home/$(POSTGRES_USER)/.cache/pip"
+  - ls -la /root/.cache/pip && ls -la "/home/`echo $POSTGRES_USER`/.cache/pip"
   - pip install -r /builds/ezdoo/odoo/requirements.txt
 
 test:
   script:
-  - ls -la /root/.cache/pip && ls -la "/home/$(POSTGRES_USER)/.cache/pip"
+  - ls -la /root/.cache/pip && ls -la "/home/`echo $POSTGRES_USER`/.cache/pip"
   - su $POSTGRES_USER -c 'python /builds/ezdoo/odoo/odoo.py --database="$POSTGRES_DB" --db_host="$DB_HOST" --db_user="$POSTGRES_USER" --db_password="$POSTGRES_PASSWORD" --addons-path=/builds/ezdoo/odoo/addons/ -i all --enable-test --log-level=warn --stop-after-init'
-  - ls -la /root/.cache/pip && ls -la "/home/$(POSTGRES_USER)/.cache/pip"
+  - ls -la /root/.cache/pip && ls -la "/home/`echo $POSTGRES_USER`/.cache/pip"
