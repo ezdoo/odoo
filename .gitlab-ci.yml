@@ -41,7 +41,6 @@ before_script:
 
 test:
   script:
-  - su $POSTGRES_USER -c 'python /builds/ezdoo/odoo/odoo.py --database="$POSTGRES_DB" --db_host="$DB_HOST" --db_user="$POSTGRES_USER" --db_password="$POSTGRES_PASSWORD" --addons-path=/builds/ezdoo/odoo/addons/ -i all --test-enable --log-level=test --data-dir=~/tmp/odoo-data --stop-after-init'
   - su $POSTGRES_USER -c 'coverage run /builds/ezdoo/odoo/odoo.py --database="$POSTGRES_DB" --db_host="$DB_HOST" --db_user="$POSTGRES_USER" --db_password="$POSTGRES_PASSWORD" --addons-path=/builds/ezdoo/odoo/addons/ -i all --test-enable --log-level=test --data-dir=~/tmp/odoo-data --stop-after-init'
   - coverage html
   - coverage report -i
