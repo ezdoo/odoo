@@ -27,6 +27,7 @@ cache:
   - ~/.cache/pip/
 
 before_script:
+  - pip install wheel
   - python -V                                   # Print out python version for debugging
   - pip --version
   - pip --help
@@ -36,8 +37,8 @@ before_script:
   - apt-get install postgresql-client-common postgresql-client -yqq # PostgreSQL client support
   - apt-get install python-dev -yqq             # Python development support
   - useradd "$POSTGRES_USER"                    # Added regular user to runner
-  - pip install coverage
-  - pip install -r /builds/ezdoo/odoo/requirements.txt
+  - pip install --use-wheel coverage
+  - pip install --use-wheel -r /builds/ezdoo/odoo/requirements.txt
 
 test:
   script:
