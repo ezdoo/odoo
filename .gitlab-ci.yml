@@ -25,6 +25,7 @@ cache:
   untracked: true
   paths:
   - ~/.cache/pip/
+  - ~/.cache/wheel
 
 before_script:
   - pip install wheel
@@ -37,8 +38,8 @@ before_script:
   - apt-get install postgresql-client-common postgresql-client -yqq # PostgreSQL client support
   - apt-get install python-dev -yqq             # Python development support
   - useradd "$POSTGRES_USER"                    # Added regular user to runner
-  - pip install --use-wheel coverage
-  - pip install --use-wheel -r /builds/ezdoo/odoo/requirements.txt
+  - pip wheel --wheel-dir=~/.cache/wheel -r /builds/ezdoo/odoo/requirements.txt coverage
+  - pip install --use-wheel --no-index --find-links=~/.cache/wheel -r /builds/ezdoo/odoo/requirements.txt coverage
 
 test:
   coverage: '/covered (\d+\%\s*$)/'
