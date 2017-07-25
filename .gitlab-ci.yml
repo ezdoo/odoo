@@ -23,12 +23,13 @@ variables:
 cache:
   key: "$CI_JOB_STAGE/$CI_COMMIT_REF_NAME"
   untracked: true
-  paths:
-  - ~/.cache/pip/
-  - ~/.cache/wheel
 
 test:
   coverage: '/covered (\d+\%\s*$)/'
+  cache:
+    paths:
+    - ~/.cache/pip/
+    - ~/.cache/wheel
   script:
   - pip install wheel
   - python -V                                   # Print out python version for debugging
