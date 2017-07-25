@@ -10,6 +10,7 @@ services:
   - postgres:latest
 
 variables:
+  CI_DEBUG_TRACE: "true"
   # GIT_STRATEGY: fetch
   GIT_DEPTH: "1"
   # POSTGRES_DB: $CI_BUILD_REF
@@ -58,4 +59,3 @@ pages:
   artifacts:
     paths:
       - public
-    expire_in: 30 days
