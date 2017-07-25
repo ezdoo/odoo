@@ -17,9 +17,7 @@ variables:
   POSTGRES_USER: runner
   POSTGRES_PASSWORD: "p@$$w04d"
   DB_HOST: "postgres"
-
-# This folder is cached between builds
-# http://docs.gitlab.com/ce/ci/yaml/README.html#cache
+  DEPS: "nodejs libsasl2-dev libldap2-dev libssl-dev postgresql-client-common postgresql-client python-dev"
 
 test:
   coverage: '/covered (\d+\%\s*$)/'
@@ -33,11 +31,13 @@ test:
   - python -V                                   # Print out python version for debugging
   - pip --version
   - pip --help
-  - apt-get update -q                           # Update apt repositories cache
-  - apt-get install nodejs -yqq                 # Install nodejs javascript support
-  - apt-get install libsasl2-dev libldap2-dev libssl-dev -yqq # Development libraries for 
-  - apt-get install postgresql-client-common postgresql-client -yqq # PostgreSQL client support
-  - apt-get install python-dev -yqq             # Python development support
+  # - apt-get update -q                           # Update apt repositories cache
+  # - apt-get install nodejs -yqq                 # Install nodejs javascript support
+  # - apt-get install libsasl2-dev libldap2-dev libssl-dev -yqq # Development libraries for 
+  # - apt-get install postgresql-client-common postgresql-client -yqq # PostgreSQL client support
+  # - apt-get install python-dev -yqq             # Python development support
+  - echo "Packages to install: $DEPS"
+  - apt-get update -qq && apt-get install -yqq $DEPS # Install system packages
   - useradd "$POSTGRES_USER"                    # Added regular user to runner
   - pip wheel --wheel-dir=~/.cache/wheel -r /builds/ezdoo/odoo/requirements.txt coverage
   - pip install --use-wheel --no-index --find-links=~/.cache/wheel -r /builds/ezdoo/odoo/requirements.txt coverage
