@@ -56,7 +56,7 @@ pages:
   dependencies:
     - test
   script:
-    - mv htmlcov public
+    - rm -rf public/* && mv htmlcov/* public/
   artifacts:
     paths:
       - public
