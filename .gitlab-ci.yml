@@ -20,15 +20,13 @@ variables:
 
 # This folder is cached between builds
 # http://docs.gitlab.com/ce/ci/yaml/README.html#cache
-cache:
-  key: "$CI_JOB_STAGE/$CI_COMMIT_REF_NAME"
-  untracked: true
 
 test:
   coverage: '/covered (\d+\%\s*$)/'
   cache:
+    key: "$CI_JOB_STAGE/$CI_COMMIT_REF_NAME"
+    untracked: false
     paths:
-    - ~/.cache/pip/
     - ~/.cache/wheel
   script:
   - pip install wheel
@@ -56,7 +54,7 @@ pages:
   dependencies:
     - test
   script:
-    - rm -rf public/* && mv htmlcov/* public/
+    - rm -rf public/*; mv htmlcov/* public/
   artifacts:
     paths:
       - public
