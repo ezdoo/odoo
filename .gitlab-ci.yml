@@ -10,7 +10,7 @@ services:
   - postgres:latest
 
 variables:
-  GIT_STRATEGY: fetch
+  # GIT_STRATEGY: fetch
   GIT_DEPTH: "1"
   # POSTGRES_DB: $CI_BUILD_REF
   POSTGRES_DB: runner
@@ -54,7 +54,8 @@ pages:
   dependencies:
     - test
   script:
-    - rm -rf public/*; mv htmlcov/* public/
+    - '[ -d public ] && rm -rf public && mv htmlcov public'
+    - '[ ! -d public ] && mv htmlcov public'
   artifacts:
     paths:
       - public
