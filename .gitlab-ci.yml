@@ -41,9 +41,23 @@ before_script:
   - pip install --use-wheel -r /builds/ezdoo/odoo/requirements.txt
 
 test:
+  coverage: '/covered (\d+\%\s*$)/'
   script:
   - su $POSTGRES_USER -c 'coverage run /builds/ezdoo/odoo/odoo.py --database="$POSTGRES_DB" --db_host="$DB_HOST" --db_user="$POSTGRES_USER" --db_password="$POSTGRES_PASSWORD" --addons-path=/builds/ezdoo/odoo/addons/ -i all --test-enable --log-level=test --data-dir=~/tmp/odoo-data --stop-after-init'
   - coverage html
   - coverage report -i
   - grep pc_cov htmlcov/index.html | egrep -o "[0-9]+\%" | awk '{ print "covered " $1;}'
+  artifacts:
+    paths:
+      - htmlcov/
 
+pages:
+  stage: deploy
+  dependencies:
+    - test
+  script:
+    - mv htmlcov/ public/
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
