@@ -27,7 +27,9 @@ cache:
   - ~/.cache/pip/
   - ~/.cache/wheel
 
-before_script:
+test:
+  coverage: '/covered (\d+\%\s*$)/'
+  script:
   - pip install wheel
   - python -V                                   # Print out python version for debugging
   - pip --version
@@ -40,10 +42,6 @@ before_script:
   - useradd "$POSTGRES_USER"                    # Added regular user to runner
   - pip wheel --wheel-dir=~/.cache/wheel -r /builds/ezdoo/odoo/requirements.txt coverage
   - pip install --use-wheel --no-index --find-links=~/.cache/wheel -r /builds/ezdoo/odoo/requirements.txt coverage
-
-test:
-  coverage: '/covered (\d+\%\s*$)/'
-  script:
   - su $POSTGRES_USER -c 'coverage run /builds/ezdoo/odoo/odoo.py --database="$POSTGRES_DB" --db_host="$DB_HOST" --db_user="$POSTGRES_USER" --db_password="$POSTGRES_PASSWORD" --addons-path=/builds/ezdoo/odoo/addons/ -i all --test-enable --log-level=test --data-dir=~/tmp/odoo-data --stop-after-init'
   - coverage html
   - coverage report -i
